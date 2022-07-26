@@ -1,0 +1,12 @@
+#!/usr/bin/env
+
+[Desktop Entry]
+Type=Application
+Name=lited
+GenericName=lited
+Comment=lited text editor
+Categories=Development;
+StartupNotify=true
+Path=/unset/
+Exec=/unset/
+Icon=/unset/
