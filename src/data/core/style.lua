@@ -3,7 +3,7 @@ local style = {}
 
 style.padding = { x = common.round(14 * SCALE), y = common.round(7 * SCALE) }
 style.divider_size = common.round(1 * SCALE)
-style.scrollbar_size = common.round(4 * SCALE)
+style.scrollbar_size = common.round(8 * SCALE)
 style.caret_width = common.round(2 * SCALE)
 style.tab_width = common.round(170 * SCALE)
 
@@ -12,7 +12,7 @@ style.big_font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", 34 * SCALE
 style.icon_font = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 14 * SCALE)
 style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/monospace.ttf", 13.5 * SCALE)
 
-style.background = { common.color "#2e2e32" }
+style.background = { common.color "#393940" }
 style.background2 = { common.color "#252529" }
 style.background3 = { common.color "#252529" }
 style.text = { common.color "#97979c" }
@@ -24,8 +24,8 @@ style.selection = { common.color "#48484f" }
 style.line_number = { common.color "#525259" }
 style.line_number2 = { common.color "#83838f" }
 style.line_highlight = { common.color "#343438" }
-style.scrollbar = { common.color "#414146" }
-style.scrollbar2 = { common.color "#4b4b52" }
+style.scrollbar = { common.color "#a7600d" }
+style.scrollbar2 = { common.color "#ca6d00" }
 
 style.syntax = {}
 style.syntax["normal"] = { common.color "#e1e1e6" }
