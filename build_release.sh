@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "not ready"
+exit
 ./build.sh release windows
 ./build.sh release
 rm lite.zip 2>/dev/null
