@@ -1,9 +1,9 @@
-# lite
+# lited usage
 
 ![screenshot](https://user-images.githubusercontent.com/3920290/81471642-6c165880-91ea-11ea-8cd1-fae7ae8f0bc4.png)
 
 ## Overview
-lite is a lightweight text editor written mostly in Lua — it aims to provide
+lited is a lightweight text editor written mostly in Lua — it aims to provide
 something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
@@ -59,7 +59,7 @@ command is run it will be created.
 
 
 ## Commands
-Commands in lite are used both through the command finder (`ctrl+shift+p`) and
+Commands in lited are used both through the command finder (`ctrl+shift+p`) and
 by lite's keyboard shortcut system. Commands consist of 3 components:
 * **Name** — The command name in the form of `namespace:action-name`, for
   example: `doc:select-all`
@@ -115,7 +115,7 @@ keymap.add { ["ctrl+q"] = "core:quit" }
 
 
 ## Plugins
-Plugins in lite are normal lua modules and are treated as such — no
+Plugins in lited are normal lua modules and are treated as such — no
 complicated plugin manager is provided, and, once a plugin is loaded, it is never
 expected be to have to unload itself.
 
@@ -133,7 +133,7 @@ Plugins can be downloaded from the [plugins repository](https://github.com/rxi/l
 
 
 ## Color Themes
-Colors themes in lite are lua modules which overwrite the color fields of lite's
+Colors themes in lited are lua modules which overwrite the color fields of lite's
 `core.style` module. Color themes should be placed in the `data/user/colors`
 directory.
 
