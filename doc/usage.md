@@ -9,17 +9,17 @@ possible; easy to modify and extend, or to use without doing either.
 
 
 ## Getting Started
-When lite is started it's typically opened with a *project directory* — this
+When lited is started it's typically opened with a *project directory* — this
 is the directory where your project's code and other data resides. The project
-directory is set once when lite is started and, for the duration of the
+directory is set once when lited is started and, for the duration of the
 session, cannot be changed.
 
-To open lite with a specific project directory the directory name can be passed
+To open lited with a specific project directory the directory name can be passed
 as a command-line argument *(`.` can be passed to use the current directory)* or
-the directory can be dragged onto either the lite executable or a running
-instance of lite.
+the directory can be dragged onto either the lited executable or a running
+instance of lited.
 
-The main way of opening files in lite is through the `core:find-file` command
+The main way of opening files in lited is through the `core:find-file` command
 — this provides a fuzzy finder over all of the project's files and can be
 opened using the **`ctrl+p`** shortcut by default.
 
@@ -32,12 +32,12 @@ of the command name on the command finder, thus to find the shortcut for a comma
 
 
 ## User Module
-lite can be configured through use of the user module. The user module can be
+lited can be configured through use of the user module. The user module can be
 used for changing options in the config module, adding additional key bindings,
 loading custom color themes, modifying the style or changing any other part of
-lite to your personal preference.
+lited to your personal preference.
 
-The user module is loaded by lite when the application starts, after the plugins
+The user module is loaded by lited when the application starts, after the plugins
 have been loaded.
 
 The user module can be modified by running the `core:open-user-module` command
@@ -46,11 +46,11 @@ or otherwise directly opening the `data/user/init.lua` file.
 
 ## Project Module
 The project module is an optional module which is loaded from the current
-project's directory when lite is started. Project modules can be useful for
+project's directory when lited is started. Project modules can be useful for
 things like adding custom commands for project-specific build systems, or
 loading project-specific plugins.
 
-The project module is loaded by lite when the application starts, after both the
+The project module is loaded by lited when the application starts, after both the
 plugins and user module have been loaded.
 
 The project module can be edited by running the `core:open-project-module`
@@ -60,7 +60,7 @@ command is run it will be created.
 
 ## Commands
 Commands in lited are used both through the command finder (`ctrl+shift+p`) and
-by lite's keyboard shortcut system. Commands consist of 3 components:
+by lited's keyboard shortcut system. Commands consist of 3 components:
 * **Name** — The command name in the form of `namespace:action-name`, for
   example: `doc:select-all`
 * **Predicate** — A function that returns true if the command can be ran, for
