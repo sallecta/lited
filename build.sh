@@ -97,6 +97,12 @@ echo "Linking..."
 $compiler $dir_build_obj/*.o $lflags
 fn_stoponerror $? $LINENO
 
+if [[ $* != *debug* ]]; then
+	echo "Striping..."
+	strip $outfile
+	fn_stoponerror $? $LINENO
+fi
+
 echo "Copying data folder..."
 cp -r ./src/data ./$dir_build_exe
 fn_stoponerror $? $LINENO
