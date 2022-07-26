@@ -98,7 +98,7 @@ $compiler $dir_build_obj/*.o $lflags
 fn_stoponerror $? $LINENO
 
 echo "Copying data folder..."
-cp -r ./data ./$dir_build_exe
+cp -r ./src/data ./$dir_build_exe
 fn_stoponerror $? $LINENO
 
 echo "Applying desktop integration..."
@@ -111,7 +111,9 @@ echo "$file_content">"$dir_build_exe/fix_desktop_file.sh"
 fn_stoponerror $? $LINENO
 chmod +x "$dir_build_exe/fix_desktop_file.sh"
 fn_stoponerror $? $LINENO
-cp "./src/start-lited.desktop" "$dir_build_exe"
+cp "./src/start-lited.desktop.template" "$dir_build_exe/start-lited.desktop"
+fn_stoponerror $? $LINENO
+cp "./src/icon.ico" "$dir_build_exe"
 fn_stoponerror $? $LINENO
 
 
