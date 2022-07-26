@@ -3,8 +3,6 @@
 
 A lightweight text editor written in Lua
 
-* **[Get lite](https://github.com/rxi/lite/releases/latest)** — Download
-  for Windows and Linux
 * **[Get started](doc/usage.md)** — A quick overview on how to get started
 * **[Get plugins](https://github.com/rxi/lite-plugins)** — Add additional
   functionality
@@ -12,7 +10,7 @@ A lightweight text editor written in Lua
   themes
 
 ## Overview
-lite is a lightweight text editor written mostly in Lua — it aims to provide
+lited is a lightweight text editor written mostly in Lua — it aims to provide
 something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
