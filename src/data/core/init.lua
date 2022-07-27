@@ -1,6 +1,7 @@
 require "core.strict"
 local common = require "core.common"
-local config = require "core.config"
+--local config = require "core.config"
+global("config" , require("core.config") )
 local style = require "core.style"
 local command
 local keymap
@@ -189,7 +190,7 @@ end
 
 
 function core.load_project_module()
-  local filename = ".lite_project.lua"
+  local filename = "." .. config.app_name .. "_project.lua"
   if system.get_file_info(filename) then
     return core.try(function()
       local fn, err = loadfile(filename)
@@ -400,7 +401,7 @@ function core.step()
 
   -- update window title
   local name = core.active_view:get_name()
-  local title = (name ~= "---") and (name .. " - lite") or  "lite"
+  local title = (name ~= "---") and ( name .. " - " .. config.app_name ) or  config.app_name
   if title ~= core.window_title then
     system.set_window_title(title)
     core.window_title = title

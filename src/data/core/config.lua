@@ -16,5 +16,8 @@ config.line_height = 1.2
 config.indent_size = 2
 config.tab_type = "soft"
 config.line_limit = 80
+--
+config.app_name = "lited"
+config.app_version = '0.8'
 
 return config
