@@ -4,7 +4,7 @@
 A lightweight text editor written in Lua (forked from [lite by rxi](https://github.com/rxi/lite))
 
 ## Usage
-A quick usage [instructions](https://github.com/rxi/lite-plugins)
+A quick usage [instructions](https://github.com/rxi/lite-plugins).
 
 ## Overview
 lited is a lightweight text editor written mostly in Lua — it aims to provide
