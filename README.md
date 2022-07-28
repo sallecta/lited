@@ -23,8 +23,12 @@ the foloowing sources:
 - [lite-xl-plugins](https://github.com/lite-xl/lite-xl-plugins);
 - [rxi/lite source code](https://github.com/rxi/lite/tree/master/data/plugins);
 - [lite-xl sorce code](https://github.com/lite-xl/lite-xl/tree/master/data/plugins).
- additional color
-themes can be found in the [colors repository](https://github.com/rxi/lite-colors).
+
+### Color themes
+Additional color themes can be found in the foloowing sources:
+- [rxi/lite-colors](https://github.com/rxi/lite-colors);
+- [lite-xl-colors](https://github.com/lite-xl/lite-xl-colors);
+
 The editor can be customized by making changes to the
 [user module](data/user/init.lua).
 
