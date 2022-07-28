@@ -12,7 +12,6 @@ local Doc
 
 local core = {}
 
-
 local function project_scan_thread()
   local function diff_files(a, b)
     if #a ~= #b then return true end
@@ -73,59 +72,6 @@ local function project_scan_thread()
     coroutine.yield(config.project_scan_rate)
   end
 end
-
-
-function core.init()
-  command = require "core.command"
-  keymap = require "core.keymap"
-  RootView = require "core.rootview"
-  StatusView = require "core.statusview"
-  CommandView = require "core.commandview"
-  Doc = require "core.doc"
-
-  local project_dir = EXEDIR
-  local files = {}
-  for i = 2, #ARGS do
-    local info = system.get_file_info(ARGS[i]) or {}
-    if info.type == "file" then
-      table.insert(files, system.absolute_path(ARGS[i]))
-    elseif info.type == "dir" then
-      project_dir = ARGS[i]
-    end
-  end
-
-  system.chdir(project_dir)
-
-  core.frame_start = 0
-  core.clip_rect_stack = {{ 0,0,0,0 }}
-  core.log_items = {}
-  core.docs = {}
-  core.threads = setmetatable({}, { __mode = "k" })
-  core.project_files = {}
-  core.redraw = true
-
-  core.root_view = RootView()
-  core.command_view = CommandView()
-  core.status_view = StatusView()
-
-  core.root_view.root_node:split("down", core.command_view, true)
-  core.root_view.root_node.b:split("down", core.status_view, true)
-
-  core.add_thread(project_scan_thread)
-  command.add_defaults()
-  local got_plugin_error = not core.load_plugins()
-  local got_user_error = not core.try(require, "user")
-  local got_project_error = not core.load_project_module()
-
-  for _, filename in ipairs(files) do
-    core.root_view:open_doc(core.open_doc(filename))
-  end
-
-  if got_plugin_error or got_user_error or got_project_error then
-    command.perform("core:open-log")
-  end
-end
-
 
 local temp_uid = (system.get_time() * 1000) % 0xffffffff
 local temp_file_prefix = string.format(".lite_temp_%08x", temp_uid)
@@ -449,20 +395,6 @@ local run_threads = coroutine.wrap(function()
 end)
 
 
-function core.run()
-  while true do
-    core.frame_start = system.get_time()
-    local did_redraw = core.step()
-    run_threads()
-    if not did_redraw and not system.window_has_focus() then
-      system.wait_event(0.25)
-    end
-    local elapsed = system.get_time() - core.frame_start
-    system.sleep(math.max(0, 1 / config.fps - elapsed))
-  end
-end
-
-
 function core.on_error(err)
   -- write error to file
   local fp = io.open(EXEDIR .. "/error.txt", "wb")
@@ -477,5 +409,69 @@ function core.on_error(err)
   end
 end
 
+
+function core.init() -- called from main.c 
+	command = require "core.command"
+	keymap = require "core.keymap"
+	RootView = require "core.rootview"
+	StatusView = require "core.statusview"
+	CommandView = require "core.commandview"
+	Doc = require "core.doc"
+	
+	local project_dir = EXEDIR
+	local files = {}
+	for i = 2, #ARGS do -- checking command line arguments from 2 to latest
+		local info = system.get_file_info(ARGS[i]) or {}
+		if info.type == "file" then
+			table.insert(files, system.absolute_path(ARGS[i]))
+		elseif info.type == "dir" then
+			project_dir = ARGS[i]
+		end
+	end
+	
+	system.chdir(project_dir)
+	
+	core.frame_start = 0
+	core.clip_rect_stack = {{ 0,0,0,0 }}
+	core.log_items = {}
+	core.docs = {}
+	core.threads = setmetatable({}, { __mode = "k" })
+	core.project_files = {}
+	core.redraw = true
+	
+	core.root_view = RootView()
+	core.command_view = CommandView()
+	core.status_view = StatusView()
+	
+	core.root_view.root_node:split("down", core.command_view, true)
+	core.root_view.root_node.b:split("down", core.status_view, true)
+	
+	core.add_thread(project_scan_thread)
+	command.add_defaults()
+	local got_plugin_error = not core.load_plugins()
+	local got_user_error = not core.try(require, "user")
+	local got_project_error = not core.load_project_module()
+	
+	for _, filename in ipairs(files) do
+		core.root_view:open_doc(core.open_doc(filename))
+	end
+	
+	if got_plugin_error or got_user_error or got_project_error then
+		command.perform("core:open-log")
+	end
+end -- core.init
+
+function core.run() -- called from main.c
+	while true do
+		core.frame_start = system.get_time()
+		local did_redraw = core.step()
+		run_threads()
+		if not did_redraw and not system.window_has_focus() then
+			system.wait_event(0.25)
+		end
+		local elapsed = system.get_time() - core.frame_start
+		system.sleep(math.max(0, 1 / config.fps - elapsed))
+	end
+end -- core.run
 
 return core
