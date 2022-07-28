@@ -13,7 +13,7 @@ possible; easy to modify and extend, or to use without doing either.
 
 ## Customization
 ### Syntax highlighting
-Syntax highlighting support for additional languages can be added by copying language plugins (named 'language_{languageName}.lua) to [src/data/plugins/highliter/languages](data/plugins/highliter/languages) directory.
+Syntax highlighting support for additional languages can be added by copying language plugins (named 'language_{languageName}.lua) to [src/data/plugins/highliter/languages](src/data/plugins/highliter/languages) directory.
 
 ### Plugins
 Additional functionality can be added through plugins which are available from
