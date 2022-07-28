@@ -24,7 +24,7 @@ the foloowing sources:
 - [lite-xl sorce code](https://github.com/lite-xl/lite-xl/tree/master/data/plugins).
 
 ### Color themes
-Additional color themes can be found in the foloowing sources:
+Additional color themes can be found in the following sources:
 - [rxi/lite-colors](https://github.com/rxi/lite-colors);
 - [lite-xl-colors](https://github.com/lite-xl/lite-xl-colors).
 
