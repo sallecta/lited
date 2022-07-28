@@ -3,10 +3,6 @@
 
 A lightweight text editor written in Lua (forked from [lite by rxi](https://github.com/rxi/lite))
 
-* **[Get plugins](https://github.com/rxi/lite-plugins)** — Add additional
-  functionality
-* **[Get color themes](https://github.com/rxi/lite-colors)** — Add additional colors
-  themes
 ## Usage
 A quick usage [instructions](https://github.com/rxi/lite-plugins)
 
@@ -27,7 +23,7 @@ the foloowing sources:
 ### Color themes
 Additional color themes can be found in the foloowing sources:
 - [rxi/lite-colors](https://github.com/rxi/lite-colors);
-- [lite-xl-colors](https://github.com/lite-xl/lite-xl-colors);
+- [lite-xl-colors](https://github.com/lite-xl/lite-xl-colors).
 
 The editor can be customized by making changes to the
 [user module](data/user/init.lua).
