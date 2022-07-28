@@ -1,7 +1,7 @@
 # lited
 ![screenshot](https://user-images.githubusercontent.com/3920290/81471642-6c165880-91ea-11ea-8cd1-fae7ae8f0bc4.png)
 
-A lightweight text editor written in Lua (forked from [lite by rxi](https://github.com/rxi/lite))
+A lightweight text editor written in Lua (forked from [lite by rxi](https://github.com/rxi/lite)).
 
 ## Usage
 A quick usage [instructions](https://github.com/rxi/lite-plugins).
@@ -30,16 +30,16 @@ The editor can be customized by making changes to the
 
 ## Building
 You can build the project yourself on Linux using the `build.sh` script
-or on Windows using the `build.bat` script *([MinGW](https://nuwen.net/mingw.html) is required)*.
+~~or on Windows using the `build.bat` script *([MinGW](https://nuwen.net/mingw.html) is required)*~~.
 Note that the project does not need to be rebuilt if you are only making changes
-to the Lua portion of the code.
+to the Lua portion of the code (located at src/data directory).
 
-## Contributing
+~~## Contributing
 Any additional functionality that can be added through a plugin should be done
 so as a plugin, after which a pull request to the
 [plugins repository](https://github.com/rxi/lite-plugins) can be made. In hopes
 of remaining lightweight, pull requests adding additional functionality to the
-core will likely not be merged. Bug reports and bug fixes are welcome.
+core will likely not be merged. Bug reports and bug fixes are welcome~~.
 
 ## License
 This project is free software; you can redistribute it and/or modify it under
