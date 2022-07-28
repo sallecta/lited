@@ -26,7 +26,7 @@ Additional color themes can be found in the foloowing sources:
 - [lite-xl-colors](https://github.com/lite-xl/lite-xl-colors).
 
 The editor can be customized by making changes to the
-[user module](data/user/init.lua).
+[user module](src/data/user/init.lua).
 
 ## Building
 You can build the project yourself on Linux using the `build.sh` script
