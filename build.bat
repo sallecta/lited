@@ -2,7 +2,8 @@
 
 rem download this:
 rem https://nuwen.net/mingw.html
-
+echo "not ready"
+exit
 echo compiling (windows)...
 
 windres res.rc -O coff -o res.res
