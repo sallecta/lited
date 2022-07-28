@@ -3,11 +3,12 @@
 
 A lightweight text editor written in Lua (forked from [lite by rxi](https://github.com/rxi/lite))
 
-* **[Get started](doc/usage.md)** — A quick overview on how to get started
 * **[Get plugins](https://github.com/rxi/lite-plugins)** — Add additional
   functionality
 * **[Get color themes](https://github.com/rxi/lite-colors)** — Add additional colors
   themes
+## Usage
+A quick usage [instructions](https://github.com/rxi/lite-plugins)
 
 ## Overview
 lited is a lightweight text editor written mostly in Lua — it aims to provide
@@ -15,8 +16,14 @@ something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
 ## Customization
+### Plugins
 Additional functionality can be added through plugins which are available from
-the [plugins repository](https://github.com/rxi/lite-plugins); additional color
+the foloowing sources:
+- [rxi/lite-plugins](https://github.com/rxi/lite-plugins);
+- [lite-xl-plugins](https://github.com/lite-xl/lite-xl-plugins);
+- [rxi/lite source code](https://github.com/rxi/lite/tree/master/data/plugins);
+- [lite-xl sorce code](https://github.com/lite-xl/lite-xl/tree/master/data/plugins).
+ additional color
 themes can be found in the [colors repository](https://github.com/rxi/lite-colors).
 The editor can be customized by making changes to the
 [user module](data/user/init.lua).
