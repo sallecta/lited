@@ -137,4 +137,10 @@ function common.bench(name, fn, ...)
 end
 
 
+function common.get_obj( arg_mod )
+	local obj
+	obj = require(arg_mod)
+	return obj()
+end --common.get_obj
+
 return common

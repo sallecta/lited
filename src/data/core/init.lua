@@ -1,88 +1,76 @@
 require "core.strict"
 local common = require "core.common"
---local config = require "core.config"
 global("config" , require("core.config") )
 local style = require "core.style"
-local command
-local keymap
-local RootView
-local StatusView
-local CommandView
-local Doc
 
+
+local temp_uid = (system.get_time() * 1000) % 0xffffffff
+local temp_file_prefix = string.format("." .. config.app_name .. "_temp_%08x", temp_uid)
+local temp_file_counter = 0
 
 local core = {}
 
-function core.return_require( arg_require )
-	local Returned
-	Returned = require(arg_require)
-	return Returned()
-end --core.return_require
-
 local function project_scan_thread()
-  local function diff_files(a, b)
-    if #a ~= #b then return true end
-    for i, v in ipairs(a) do
-      if b[i].filename ~= v.filename
-      or b[i].modified ~= v.modified then
-        return true
-      end
-    end
-  end
-
-  local function compare_file(a, b)
-    return a.filename < b.filename
-  end
-
-  local function get_files(path, t)
-    coroutine.yield()
-    t = t or {}
-    local size_limit = config.file_size_limit * 10e5
-    local all = system.list_dir(path) or {}
-    local dirs, files = {}, {}
-
-    for _, file in ipairs(all) do
-      if not common.match_pattern(file, config.ignore_files) then
-        local file = (path ~= "." and path .. PATHSEP or "") .. file
-        local info = system.get_file_info(file)
-        if info and info.size < size_limit then
-          info.filename = file
-          table.insert(info.type == "dir" and dirs or files, info)
-        end
-      end
-    end
-
-    table.sort(dirs, compare_file)
-    for _, f in ipairs(dirs) do
-      table.insert(t, f)
-      get_files(f.filename, t)
-    end
-
-    table.sort(files, compare_file)
-    for _, f in ipairs(files) do
-      table.insert(t, f)
-    end
-
-    return t
-  end
-
-  while true do
-    -- get project files and replace previous table if the new table is
-    -- different
-    local t = get_files(".")
-    if diff_files(core.project_files, t) then
-      core.project_files = t
-      core.redraw = true
-    end
-
-    -- wait for next scan
-    coroutine.yield(config.project_scan_rate)
-  end
-end
-
-local temp_uid = (system.get_time() * 1000) % 0xffffffff
-local temp_file_prefix = string.format(".lite_temp_%08x", temp_uid)
-local temp_file_counter = 0
+	
+	local function diff_files(a, b)
+		if #a ~= #b then return true end
+		for i, v in ipairs(a) do
+			if b[i].filename ~= v.filename or b[i].modified ~= v.modified then
+				return true
+			end
+		end
+	end --diff_files
+	
+	local function compare_file(a, b)
+		return a.filename < b.filename
+	end --compare_file
+	
+	local function get_files(path, t)
+		coroutine.yield()
+		t = t or {}
+		local size_limit = config.file_size_limit * 10e5
+		local all = system.list_dir(path) or {}
+		local dirs, files = {}, {}
+		
+		for _, file in ipairs(all) do
+			if not common.match_pattern(file, config.ignore_files) then
+				local file = (path ~= "." and path .. PATHSEP or "") .. file
+				local info = system.get_file_info(file)
+				if info and info.size < size_limit then
+					info.filename = file
+					table.insert(info.type == "dir" and dirs or files, info)
+				end
+			end
+		end --for
+		
+		table.sort(dirs, compare_file)
+		for _, f in ipairs(dirs) do
+			table.insert(t, f)
+			get_files(f.filename, t)
+		end
+		
+		table.sort(files, compare_file)
+		for _, f in ipairs(files) do
+			table.insert(t, f)
+		end
+		
+		return t
+		
+	end --get_files
+	
+	-- get project files and replace previous table if the new table is
+	-- different
+	while true do
+	local t = get_files(".")
+	if diff_files(core.project_files, t) then
+		core.project_files = t
+		core.redraw = true
+	end
+	-- wait for next scan
+	coroutine.yield(config.project_scan_rate)
+	end
+	
+end --project_scan_thread
 
 local function delete_temp_files()
   for _, filename in ipairs(system.list_dir(EXEDIR)) do
@@ -281,9 +269,9 @@ function core.on_event(type, ...)
   if type == "textinput" then
     core.root_view:on_text_input(...)
   elseif type == "keypressed" then
-    did_keymap = keymap.on_key_pressed(...)
+    did_keymap = core.keymap.on_key_pressed(...)
   elseif type == "keyreleased" then
-    keymap.on_key_released(...)
+    core.keymap.on_key_released(...)
   elseif type == "mousemoved" then
     core.root_view:on_mouse_moved(...)
   elseif type == "mousepressed" then
@@ -313,107 +301,109 @@ end
 
 
 function core.step()
-  -- handle events
-  local did_keymap = false
-  local mouse_moved = false
-  local mouse = { x = 0, y = 0, dx = 0, dy = 0 }
+	
+	-- handle events
+	local did_keymap = false
+	local mouse_moved = false
+	local mouse = { x = 0, y = 0, dx = 0, dy = 0 }
+	
+	for type, a,b,c,d in system.poll_event do
+		if type == "mousemoved" then
+			mouse_moved = true
+			mouse.x, mouse.y = a, b
+			mouse.dx, mouse.dy = mouse.dx + c, mouse.dy + d
+		elseif type == "textinput" and did_keymap then
+			did_keymap = false
+		else
+			local _, res = core.try(core.on_event, type, a, b, c, d)
+			did_keymap = res or did_keymap
+		end
+		core.redraw = true
+	end
+	if mouse_moved then
+		core.try(core.on_event, "mousemoved", mouse.x, mouse.y, mouse.dx, mouse.dy)
+	end
+	
+	local width, height = renderer.get_size()
+	
+	-- update
+	core.root_view.size.x, core.root_view.size.y = width, height
+	core.root_view:update()
+	if not core.redraw then return false end
+	core.redraw = false
+	
+	-- close unreferenced docs
+	for i = #core.docs, 1, -1 do
+		local doc = core.docs[i]
+		if #core.get_views_referencing_doc(doc) == 0 then
+			table.remove(core.docs, i)
+			core.log_quiet("Closed doc \"%s\"", doc:get_name())
+		end
+	end
+	
+	-- update window title
+	local name = core.active_view:get_name()
+	local title = (name ~= "---") and ( name .. " - " .. config.app_name ) or  config.app_name
+	if title ~= core.window_title then
+		system.set_window_title(title)
+		core.window_title = title
+	end
+	
+	-- draw
+	renderer.begin_frame()
+	core.clip_rect_stack[1] = { 0, 0, width, height }
+	renderer.set_clip_rect(table.unpack(core.clip_rect_stack[1]))
+	core.root_view:draw()
+	renderer.end_frame()
+	return true
+	
+end --core.step
 
-  for type, a,b,c,d in system.poll_event do
-    if type == "mousemoved" then
-      mouse_moved = true
-      mouse.x, mouse.y = a, b
-      mouse.dx, mouse.dy = mouse.dx + c, mouse.dy + d
-    elseif type == "textinput" and did_keymap then
-      did_keymap = false
-    else
-      local _, res = core.try(core.on_event, type, a, b, c, d)
-      did_keymap = res or did_keymap
-    end
-    core.redraw = true
-  end
-  if mouse_moved then
-    core.try(core.on_event, "mousemoved", mouse.x, mouse.y, mouse.dx, mouse.dy)
-  end
+local function run_threads_fn()
+	while true do
+		local max_time = 1 / config.fps - 0.004
+		local ran_any_threads = false
+		
+		for k, thread in pairs(core.threads) do
+			-- run thread
+			if thread.wake < system.get_time() then
+				local _, wait = assert(coroutine.resume(thread.cr))
+				if coroutine.status(thread.cr) == "dead" then
+					if type(k) == "number" then
+						table.remove(core.threads, k)
+					else
+						core.threads[k] = nil
+					end
+				elseif wait then
+					thread.wake = system.get_time() + wait
+				end
+				ran_any_threads = true
+			end
+			-- stop running threads if we're about to hit the end of frame
+			if system.get_time() - core.frame_start > max_time then
+				coroutine.yield()
+			end
+		end --for
+		
+		if not ran_any_threads then coroutine.yield() end
+	end
+end --run_threads_fn
 
-  local width, height = renderer.get_size()
-
-  -- update
-  core.root_view.size.x, core.root_view.size.y = width, height
-  core.root_view:update()
-  if not core.redraw then return false end
-  core.redraw = false
-
-  -- close unreferenced docs
-  for i = #core.docs, 1, -1 do
-    local doc = core.docs[i]
-    if #core.get_views_referencing_doc(doc) == 0 then
-      table.remove(core.docs, i)
-      core.log_quiet("Closed doc \"%s\"", doc:get_name())
-    end
-  end
-
-  -- update window title
-  local name = core.active_view:get_name()
-  local title = (name ~= "---") and ( name .. " - " .. config.app_name ) or  config.app_name
-  if title ~= core.window_title then
-    system.set_window_title(title)
-    core.window_title = title
-  end
-
-  -- draw
-  renderer.begin_frame()
-  core.clip_rect_stack[1] = { 0, 0, width, height }
-  renderer.set_clip_rect(table.unpack(core.clip_rect_stack[1]))
-  core.root_view:draw()
-  renderer.end_frame()
-  return true
-end
-
-
-local run_threads = coroutine.wrap(function()
-  while true do
-    local max_time = 1 / config.fps - 0.004
-    local ran_any_threads = false
-
-    for k, thread in pairs(core.threads) do
-      -- run thread
-      if thread.wake < system.get_time() then
-        local _, wait = assert(coroutine.resume(thread.cr))
-        if coroutine.status(thread.cr) == "dead" then
-          if type(k) == "number" then
-            table.remove(core.threads, k)
-          else
-            core.threads[k] = nil
-          end
-        elseif wait then
-          thread.wake = system.get_time() + wait
-        end
-        ran_any_threads = true
-      end
-
-      -- stop running threads if we're about to hit the end of frame
-      if system.get_time() - core.frame_start > max_time then
-        coroutine.yield()
-      end
-    end
-
-    if not ran_any_threads then coroutine.yield() end
-  end
-end)
+local run_threads = coroutine.wrap(run_threads_fn)
 
 
 function core.on_error(err)
-  -- write error to file
-  local fp = io.open(EXEDIR .. "/error.txt", "wb")
-  fp:write("Error: " .. tostring(err) .. "\n")
-  fp:write(debug.traceback(nil, 4))
-  fp:close()
-  -- save copy of all unsaved documents
-  for _, doc in ipairs(core.docs) do
-    if doc:is_dirty() and doc.filename then
-      doc:save(doc.filename .. "~")
-    end
-  end
+	-- write error to file
+	local fp = io.open(EXEDIR .. "/error.txt", "wb")
+	fp:write("Error: " .. tostring(err) .. "\n")
+	fp:write(debug.traceback(nil, 4))
+	fp:close()
+	-- save copy of all unsaved documents
+	for _, doc in ipairs(core.docs) do
+		if doc:is_dirty() and doc.filename then
+			doc:save(doc.filename .. "~")
+		end
+	end
 end
 
 function core.init() -- called from main.c 	
@@ -426,27 +416,27 @@ function core.init() -- called from main.c
 	core.project_files = {}
 	core.redraw = true
 	
-	core.root_view = core.return_require("core.rootview")
+	core.root_view = common.get_obj("core.rootview")
 	
-	core.status_view = core.return_require("core.statusview")
+	core.status_view = common.get_obj("core.statusview")
 	
-	command = require "core.command"
-	keymap = require "core.keymap"
+	core.command = require "core.command"
+	core.keymap = require("core.keymap")
 	
-	core.command_view = core.return_require("core.commandview")
+	core.command_view = common.get_obj("core.commandview")
 	
 	core.root_view.root_node:split("down", core.command_view, true)
 	core.root_view.root_node.b:split("down", core.status_view, true)
 	
 	core.add_thread(project_scan_thread)
-	command.add_defaults()
+	core.command.add_defaults()
 	
 	-- loading plugins, user, project modules
 	local got_plugin_error = not core.load_plugins()
 	local got_user_error = not core.try(require, "user")
 	local got_project_error = not core.load_project_module()
 	if got_plugin_error or got_user_error or got_project_error then
-		command.perform("core:open-log")
+		core.command.perform("core:open-log")
 	end
 	
 	local project_dir = EXEDIR
