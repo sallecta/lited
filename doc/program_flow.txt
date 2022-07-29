@@ -2,6 +2,7 @@
 
 * main.c -> core/init.lua
 	- core.init()
+		-- loading plugins, user, project modules; show log if error
 		-- get files from cmd arg, change project_dir from EXEDIR to dir from args if available
 
 * main.c -> core.run()

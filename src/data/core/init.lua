@@ -10,7 +10,14 @@ local StatusView
 local CommandView
 local Doc
 
+
 local core = {}
+
+function core.return_require( arg_require )
+	local Returned
+	Returned = require(arg_require)
+	return Returned()
+end --core.return_require
 
 local function project_scan_thread()
   local function diff_files(a, b)
@@ -195,22 +202,22 @@ end
 
 
 function core.open_doc(filename)
-  if filename then
-    -- try to find existing doc for filename
-    local abs_filename = system.absolute_path(filename)
-    for _, doc in ipairs(core.docs) do
-      if doc.filename
-      and abs_filename == system.absolute_path(doc.filename) then
-        return doc
-      end
-    end
-  end
-  -- no existing doc for filename; create new
-  local doc = Doc(filename)
-  table.insert(core.docs, doc)
-  core.log_quiet(filename and "Opened doc \"%s\"" or "Opened new doc", filename)
-  return doc
-end
+	if filename then
+		-- try to find existing doc for filename
+		local abs_filename = system.absolute_path(filename)
+		for _, doc in ipairs(core.docs) do
+			if doc.filename and abs_filename == system.absolute_path(doc.filename) then
+				return doc
+			end
+		end
+	end
+	-- no existing doc for filename; create new
+	local DocObj = require "core.doc"
+	local doc = DocObj(filename)
+	table.insert(core.docs, doc)
+	core.log_quiet(filename and "Opened doc \"%s\"" or "Opened new doc", filename)
+	return doc
+end -- core.open_doc
 
 
 function core.get_views_referencing_doc(doc)
@@ -409,14 +416,38 @@ function core.on_error(err)
   end
 end
 
-
-function core.init() -- called from main.c 
+function core.init() -- called from main.c 	
+	
+	core.frame_start = 0
+	core.clip_rect_stack = {{ 0,0,0,0 }}
+	core.log_items = {}
+	core.docs = {}
+	core.threads = setmetatable({}, { __mode = "k" })
+	core.project_files = {}
+	core.redraw = true
+	
+	core.root_view = core.return_require("core.rootview")
+	
+	core.status_view = core.return_require("core.statusview")
+	
 	command = require "core.command"
 	keymap = require "core.keymap"
-	RootView = require "core.rootview"
-	StatusView = require "core.statusview"
-	CommandView = require "core.commandview"
-	Doc = require "core.doc"
+	
+	core.command_view = core.return_require("core.commandview")
+	
+	core.root_view.root_node:split("down", core.command_view, true)
+	core.root_view.root_node.b:split("down", core.status_view, true)
+	
+	core.add_thread(project_scan_thread)
+	command.add_defaults()
+	
+	-- loading plugins, user, project modules
+	local got_plugin_error = not core.load_plugins()
+	local got_user_error = not core.try(require, "user")
+	local got_project_error = not core.load_project_module()
+	if got_plugin_error or got_user_error or got_project_error then
+		command.perform("core:open-log")
+	end
 	
 	local project_dir = EXEDIR
 	local files = {}
@@ -428,37 +459,12 @@ function core.init() -- called from main.c
 			project_dir = ARGS[i]
 		end
 	end
-	
 	system.chdir(project_dir)
-	
-	core.frame_start = 0
-	core.clip_rect_stack = {{ 0,0,0,0 }}
-	core.log_items = {}
-	core.docs = {}
-	core.threads = setmetatable({}, { __mode = "k" })
-	core.project_files = {}
-	core.redraw = true
-	
-	core.root_view = RootView()
-	core.command_view = CommandView()
-	core.status_view = StatusView()
-	
-	core.root_view.root_node:split("down", core.command_view, true)
-	core.root_view.root_node.b:split("down", core.status_view, true)
-	
-	core.add_thread(project_scan_thread)
-	command.add_defaults()
-	local got_plugin_error = not core.load_plugins()
-	local got_user_error = not core.try(require, "user")
-	local got_project_error = not core.load_project_module()
 	
 	for _, filename in ipairs(files) do
 		core.root_view:open_doc(core.open_doc(filename))
 	end
 	
-	if got_plugin_error or got_user_error or got_project_error then
-		command.perform("core:open-log")
-	end
 end -- core.init
 
 function core.run() -- called from main.c
