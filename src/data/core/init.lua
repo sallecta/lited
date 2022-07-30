@@ -417,12 +417,11 @@ function core.init() -- called from main.c
 	core.redraw = true
 	
 	core.root_view = common.get_obj("core.rootview")
-	
+	--print("init.lua")
+	--os.exit()
 	core.status_view = common.get_obj("core.statusview")
-	
 	core.command = require "core.command"
 	core.keymap = require("core.keymap")
-	
 	core.command_view = common.get_obj("core.commandview")
 	
 	core.root_view.root_node:split("down", core.command_view, true)
