@@ -132,6 +132,7 @@ int main(int argc, char **argv)
 			"	EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
 			"	package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
 			"	package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
+			"	package.path = EXEDIR .. '/data/?/?.pkg.lua;' .. package.path\n"
 			"	core = require('core')\n"
 			"	core.init()\n"
 			"	core.run()\n"
