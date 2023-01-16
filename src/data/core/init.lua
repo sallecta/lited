@@ -87,221 +87,230 @@ function core.temp_filename(ext)
 end
 
 
-function core.quit(force)
-  if force then
-    delete_temp_files()
-    os.exit()
-  end
-  local dirty_count = 0
-  local dirty_name
-  for _, doc in ipairs(core.docs) do
-    if doc:is_dirty() then
-      dirty_count = dirty_count + 1
-      dirty_name = doc:get_name()
-    end
-  end
-  if dirty_count > 0 then
-    local text
-    if dirty_count == 1 then
-      text = string.format("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
-    else
-      text = string.format("%d docs have unsaved changes. Quit anyway?", dirty_count)
-    end
-    local confirm = system.show_confirm_dialog("Unsaved Changes", text)
-    if not confirm then return end
-  end
-  core.quit(true)
+function core.quit(arg_force)
+	if arg_force then
+		delete_temp_files()
+		os.exit()
+	end
+	local dirty_count = 0
+	local dirty_name
+	for _, doc in ipairs(core.docs) do
+		if doc:is_dirty() then
+			dirty_count = dirty_count + 1
+			dirty_name = doc:get_name()
+		end
+	end
+	if dirty_count > 0 then
+		local text
+		if dirty_count == 1 then
+			text = string.format("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
+		else
+			text = string.format("%d docs have unsaved changes. Quit anyway?", dirty_count)
+		end
+		local confirm = system.show_confirm_dialog("Unsaved Changes", text)
+		if not confirm then return end
+	end
+	core.quit(true)
 end
 
 
 function core.load_plugins()
-  local no_errors = true
-  local files = system.list_dir(EXEDIR .. "/data/plugins")
-  for _, filename in ipairs(files) do
-    local modname = "plugins." .. filename:gsub(".lua$", "")
-    local ok = core.try(require, modname)
-    if ok then
-      core.log_quiet("Loaded plugin %q", modname)
-    else
-      no_errors = false
-    end
-  end
-  return no_errors
+	local no_errors = true
+	local files = system.list_dir(EXEDIR .. "/data/plugins")
+	for _, filename in ipairs(files) do
+		local modname = "plugins." .. filename:gsub(".lua$", "")
+		local ok = core.try(require, modname)
+		if ok then
+			core.log_quiet("Loaded plugin %q", modname)
+		else
+			no_errors = false
+		end
+	end
+	return no_errors
 end
 
 
 function core.load_project_module()
-  local filename = "." .. config.app_name .. "_project.lua"
-  if system.get_file_info(filename) then
-    return core.try(function()
-      local fn, err = loadfile(filename)
-      if not fn then error("Error when loading project module:\n\t" .. err) end
-      fn()
-      core.log_quiet("Loaded project module")
-    end)
-  end
-  return true
+	local filename = "." .. config.app_name .. "_project.lua"
+	if system.get_file_info(filename) then
+		return core.try
+		(
+			function()
+				local fn, err = loadfile(filename)
+				if not fn then
+					error("Error when loading project module:\n\t" .. err)
+				end
+				fn()
+				core.log_quiet("Loaded project module")
+			end
+		)
+	end
+	return true
 end
 
 
-function core.reload_module(name)
-  local old = package.loaded[name]
-  package.loaded[name] = nil
-  local new = require(name)
-  if type(old) == "table" then
-    for k, v in pairs(new) do old[k] = v end
-    package.loaded[name] = old
-  end
+function core.reload_module(arg_name)
+	local old = package.loaded[arg_name]
+	package.loaded[arg_name] = nil
+	local new = require(arg_name)
+	if type(old) == "table" then
+		for k, v in pairs(new) do old[k] = v end
+		package.loaded[arg_name] = old
+	end
 end
 
 
-function core.set_active_view(view)
-  assert(view, "Tried to set active view to nil")
-  if view ~= core.active_view then
-    core.last_active_view = core.active_view
-    core.active_view = view
-  end
+function core.set_active_view(arg_view)
+	assert(arg_view, "Tried to set active arg_view to nil")
+	if arg_view ~= core.active_view then
+		core.last_active_view = core.active_view
+		core.active_view = arg_view
+	end
 end
 
 
-function core.add_thread(f, weak_ref)
-  local key = weak_ref or #core.threads + 1
-  local fn = function() return core.try(f) end
-  core.threads[key] = { cr = coroutine.create(fn), wake = 0 }
+function core.add_thread(arg_f, arg_weak_ref)
+	local key = arg_weak_ref or #core.threads + 1
+	local fn = function() return core.try(arg_f) end
+	core.threads[key] = { cr = coroutine.create(fn), wake = 0 }
 end
 
 
-function core.push_clip_rect(x, y, w, h)
-  local x2, y2, w2, h2 = table.unpack(core.clip_rect_stack[#core.clip_rect_stack])
-  local r, b, r2, b2 = x+w, y+h, x2+w2, y2+h2
-  x, y = math.max(x, x2), math.max(y, y2)
-  b, r = math.min(b, b2), math.min(r, r2)
-  w, h = r-x, b-y
-  table.insert(core.clip_rect_stack, { x, y, w, h })
-  renderer.set_clip_rect(x, y, w, h)
+function core.push_clip_rect(arg_x, arg_y, arg_w, arg_h)
+	local x2, y2, w2, h2 = table.unpack(core.clip_rect_stack[#core.clip_rect_stack])
+	local r, b, r2, b2 = arg_x+arg_w, arg_y+arg_h, x2+w2, y2+h2
+	arg_x, arg_y = math.max(arg_x, x2), math.max(arg_y, y2)
+	b, r = math.min(b, b2), math.min(r, r2)
+	arg_w, arg_h = r-arg_x, b-arg_y
+	table.insert(core.clip_rect_stack, { arg_x, arg_y, arg_w, arg_h })
+	renderer.set_clip_rect(arg_x, arg_y, arg_w, arg_h)
 end
 
 
 function core.pop_clip_rect()
-  table.remove(core.clip_rect_stack)
-  local x, y, w, h = table.unpack(core.clip_rect_stack[#core.clip_rect_stack])
-  renderer.set_clip_rect(x, y, w, h)
+	table.remove(core.clip_rect_stack)
+	local x, y, w, h = table.unpack(core.clip_rect_stack[#core.clip_rect_stack])
+	renderer.set_clip_rect(x, y, w, h)
 end
 
 
-function core.open_doc(filename)
-	if filename then
-		-- try to find existing doc for filename
-		local abs_filename = system.absolute_path(filename)
+function core.open_doc(arg_filename)
+	if arg_filename then
+		-- try to find existing doc for arg_filename
+		local abs_filename = system.absolute_path(arg_filename)
 		for _, doc in ipairs(core.docs) do
-			if doc.filename and abs_filename == system.absolute_path(doc.filename) then
+			if doc.arg_filename and abs_filename == system.absolute_path(doc.arg_filename) then
 				return doc
 			end
 		end
 	end
-	-- no existing doc for filename; create new
+	-- no existing doc for arg_filename; create new
 	local DocObj = require "core.doc"
-	local doc = DocObj(filename)
+	local doc = DocObj(arg_filename)
 	table.insert(core.docs, doc)
-	core.log_quiet(filename and "Opened doc \"%s\"" or "Opened new doc", filename)
+	core.log_quiet(arg_filename and "Opened doc \"%s\"" or "Opened new doc", arg_filename)
 	return doc
 end -- core.open_doc
 
 
-function core.get_views_referencing_doc(doc)
-  local res = {}
-  local views = core.root_view.root_node:get_children()
-  for _, view in ipairs(views) do
-    if view.doc == doc then table.insert(res, view) end
-  end
-  return res
+function core.get_views_referencing_doc(arg_doc)
+	local res = {}
+	local views = core.root_view.root_node:get_children()
+	for _, view in ipairs(views) do
+		if view.arg_doc == arg_doc then table.insert(res, view) end
+	end
+	return res
 end
 
 
-local function log(icon, icon_color, fmt, ...)
-  local text = string.format(fmt, ...)
-  if icon then
-    core.status_view:show_message(icon, icon_color, text)
-  end
-
-  local info = debug.getinfo(2, "Sl")
-  local at = string.format("%s:%d", info.short_src, info.currentline)
-  local item = { text = text, time = os.time(), at = at }
-  table.insert(core.log_items, item)
-  if #core.log_items > config.max_log_items then
-    table.remove(core.log_items, 1)
-  end
-  return item
+local function log(arg_icon, arg_icon_color, arg_fmt, ...)
+	local text = string.format(arg_fmt, ...)
+	if arg_icon then
+		core.status_view:show_message(arg_icon, arg_icon_color, text)
+	end
+	local info = debug.getinfo(2, "Sl")
+	local at = string.format("%s:%d", info.short_src, info.currentline)
+	local item = { text = text, time = os.time(), at = at }
+	table.insert(core.log_items, item)
+	if #core.log_items > config.max_log_items then
+		table.remove(core.log_items, 1)
+	end
+	return item
 end
 
 
 function core.log(...)
-  return log("i", style.text, ...)
+	return log("i", style.text, ...)
 end
 
 
 function core.log_quiet(...)
-  return log(nil, nil, ...)
+	return log(nil, nil, ...)
 end
 
 
 function core.error(...)
-  return log("!", style.accent, ...)
+	return log("!", style.accent, ...)
 end
 
 
-function core.try(fn, ...)
-  local err
-  local ok, res = xpcall(fn, function(msg)
-    local item = core.error("%s", msg)
-    item.info = debug.traceback(nil, 2):gsub("\t", "")
-    err = msg
-  end, ...)
-  if ok then
-    return true, res
-  end
-  return false, err
+function core.try(arg_fn, ...)
+	local err
+	local ok, res = 
+	xpcall
+	(
+		arg_fn,
+		function(msg)
+			local item = core.error("%s", msg)
+			item.info = debug.traceback(nil, 2):gsub("\t", "")
+			err = msg
+		end,
+		...
+	)
+	if ok then
+		return true, res
+	end
+	return false, err
 end
 
 
-function core.on_event(type, ...)
-  local did_keymap = false
-  if type == "textinput" then
-    core.root_view:on_text_input(...)
-  elseif type == "keypressed" then
-    did_keymap = core.keymap.on_key_pressed(...)
-  elseif type == "keyreleased" then
-    core.keymap.on_key_released(...)
-  elseif type == "mousemoved" then
-    core.root_view:on_mouse_moved(...)
-  elseif type == "mousepressed" then
-    core.root_view:on_mouse_pressed(...)
-  elseif type == "mousereleased" then
-    core.root_view:on_mouse_released(...)
-  elseif type == "mousewheel" then
-    core.root_view:on_mouse_wheel(...)
-  elseif type == "filedropped" then
-    local filename, mx, my = ...
-    local info = system.get_file_info(filename)
-    if info and info.type == "dir" then
-      system.exec(string.format("%q %q", EXEFILE, filename))
-    else
-      local ok, doc = core.try(core.open_doc, filename)
-      if ok then
-        local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
-        node:set_active_view(node.active_view)
-        core.root_view:open_doc(doc)
-      end
-    end
-  elseif type == "quit" then
-    core.quit()
-  end
-  return did_keymap
-end
+function core.on_event(arg_type, ...)
+	local did_keymap = false
+	if arg_type == "textinput" then
+		core.root_view:on_text_input(...)
+	elseif arg_type == "keypressed" then
+		did_keymap = core.keymap.on_key_pressed(...)
+	elseif arg_type == "keyreleased" then
+		core.keymap.on_key_released(...)
+	elseif arg_type == "mousemoved" then
+		core.root_view:on_mouse_moved(...)
+	elseif arg_type == "mousepressed" then
+		core.root_view:on_mouse_pressed(...)
+	elseif arg_type == "mousereleased" then
+		core.root_view:on_mouse_released(...)
+	elseif arg_type == "mousewheel" then
+		core.root_view:on_mouse_wheel(...)
+	elseif arg_type == "filedropped" then
+		local filename, mx, my = ...
+		local info = system.get_file_info(filename)
+		if info and info.arg_type == "dir" then
+			system.exec(string.format("%q %q", EXEFILE, filename))
+		else
+			local ok, doc = core.try(core.open_doc, filename)
+			if ok then
+				local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
+				node:set_active_view(node.active_view)
+				core.root_view:open_doc(doc)
+			end
+		end
+	elseif arg_type == "quit" then
+		core.quit()
+	end
+	return did_keymap
+end --core.on_event
 
 
 function core.step()
-	
 	-- handle events
 	local did_keymap = false
 	local mouse_moved = false
@@ -407,7 +416,6 @@ function core.on_error(err)
 end
 
 function core.init() -- called from main.c 	
-	
 	core.frame_start = 0
 	core.clip_rect_stack = {{ 0,0,0,0 }}
 	core.log_items = {}

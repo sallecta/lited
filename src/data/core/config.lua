@@ -18,6 +18,6 @@ config.tab_type = "soft"
 config.line_limit = 80
 --
 config.app_name = "lited"
-config.app_version = '0.8'
+config.app_version = '0.8.2'
 
 return config
