@@ -13,7 +13,7 @@ fn_stoponerror ()
 }
 
 echo $na$me "Fixing .desktop launcher..."
-desktop_file="start-$app_name.desktop"
+desktop_file="$app_name.desktop"
 sed -i -e "s,^Name=.*,Name=$app_name,g" $desktop_file
 fn_stoponerror $? $LINENO
 sed -i -e "s,^GenericName=.*,GenericName=$app_name,g" $desktop_file

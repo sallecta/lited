@@ -1,10 +1,11 @@
 #!/bin/bash
 
-dir0="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+path0="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-dir_build_obj="build_obj"
-dir_build_exe="build"
-cflags="-Wall -O3 -g -std=gnu11 -fno-strict-aliasing -Isrc"
+dir_build_obj="build/obj"
+dir_build_exe="build/exe"
+dir_src="src/code_c"
+cflags="-Wall -O3 -g -std=gnu11 -fno-strict-aliasing -I$dir_src"
 lflags="-lSDL2 -lm"
 app_name="lited"
 
@@ -22,7 +23,7 @@ fn_stoponerror ()
 
 fn_clean_obj ()
 {
-	echo "Cleaning up..."
+	printf "\n\nCleaning up...\n"
 	rm $dir_build_obj/*.o
 	fn_stoponerror $? $LINENO
 	if [ "$platform" = "windows" ]; then
@@ -32,101 +33,99 @@ fn_clean_obj ()
 	rm -d $dir_build_obj
 	fn_stoponerror $? $LINENO
 }
-fn_exit ()
-{
-	printf "\nDone.\n\n"
-	exit
-}
-
 
 if [[ $* == *windows* ]]; then
-	printf "Warning: the windows platform not tested."
-  platform="windows"
-  outfile="$dir_build_exe/$app_name"".exe"
-  compiler="x86_64-w64-mingw32-gcc"
-  cflags="$cflags -DLUA_USE_POPEN -Iwinlib/SDL2-2.0.10/x86_64-w64-mingw32/include"
-  lflags="$lflags -Lwinlib/SDL2-2.0.10/x86_64-w64-mingw32/lib"
-  lflags="-lmingw32 -lSDL2main $lflags -mwindows -o $outfile $dir_build_obj/res.res"
-  x86_64-w64-mingw32-windres src/res.rc -O coff -o $dir_build_obj/res.res
+	echo "Warning: the windows platform not tested."
+	platform="windows"
+	echo "$platform not implemented"
+	exit
+	outfile="$dir_build_exe/$app_name"".exe"
+	compiler="x86_64-w64-mingw32-gcc"
+	cflags="$cflags -DLUA_USE_POPEN -Iwinlib/SDL2-2.0.10/x86_64-w64-mingw32/include"
+	lflags="$lflags -Lwinlib/SDL2-2.0.10/x86_64-w64-mingw32/lib"
+	lflags="-lmingw32 -lSDL2main $lflags -mwindows -o $outfile $dir_build_obj/res.res"
+	x86_64-w64-mingw32-windres src/res.rc -O coff -o $dir_build_obj/res.res
 elif [[ $* == *unix* ]]; then
-  platform="unix"
-  outfile="$dir_build_exe/$app_name"
-  compiler="gcc"
-  cflags="$cflags -DLUA_USE_POSIX"
-  lflags="$lflags -o $outfile"
+	platform="unix"
+	outfile="$dir_build_exe/$app_name"
+	compiler="gcc"
+	cflags="$cflags -DLUA_USE_POSIX"
 else
-  printf "\n Wrong argument. Please type:
-  ./build.sh unix \n
-  or \n
-  ./build.sh windows\n\n"
-  exit
-fi
-
-if command -v ccache >/dev/null; then
-	compiler="ccache $compiler"
-	printf "\nUsing ccache.\n"
-else
-	printf "\nWarning ccache not found.\n"
+	printf "\n Wrong argument. Please type:
+	./build.sh unix \n
+	or \n
+	./build.sh windows\n\n"
+	exit
 fi
 
 if [ ! -d "$dir_build_obj" ]; then
-	echo "Creating object build directory..."
+	echo "$LINENO: Creating object build directory..."
 	mkdir -p $dir_build_obj
 	fn_stoponerror $? $LINENO
 fi
 
+echo "$LINENO: Compiling for $platform..."
 
 
-echo "Compiling ($platform)..."
-for f in `find src -name "*.c"`; do
-	$compiler -c $cflags $f -o "$dir_build_obj/${f//\//_}.o"
+if command -v ccache >/dev/null; then
+	compiler="ccache $compiler"
+	echo "$LINENO: Using ccache."
+else
+	printf "$LINENO: Warning ccache not found."
+fi
+
+
+for f in `find src/code_c -name "*.c"`; do
+	#src_file=${f:2}
+	src_file=$f
+	echo "$LINENO: Compiling \"$src_file\""
+	$compiler -c $cflags $src_file -o "$path0/$dir_build_obj/${src_file//\//_}.o"
 	if [[ $? -ne 0 ]]; then
-		printf "\n\n$LINENO: error compiling \"$f\" file.\n"
-		fn_clean_obj
-		fn_exit
+		printf "\n\n$LINENO: error compiling \"$src_file\" file.\n"
+		exit
 	fi
 done
 
 if [ ! -d "$dir_build_exe" ]; then
-	echo "Creating build directory..."
+	echo "$LINENO: Creating build directory..."
 	mkdir -p $dir_build_exe
 	fn_stoponerror $? $LINENO
 fi
 
-echo "Linking..."
-$compiler $dir_build_obj/*.o $lflags
+echo "$LINENO: Linking $outfile..."
+$compiler $dir_build_obj/*.o $lflags -o $outfile
 fn_stoponerror $? $LINENO
 
 if [[ $* != *debug* ]]; then
-	echo "Striping..."
+	echo "$LINENO: Stripping $outfile..."
 	strip $outfile
 	fn_stoponerror $? $LINENO
 fi
 
-echo "Copying data folder..."
+echo "$LINENO: Copying data folder..."
 cp -r ./src/data ./$dir_build_exe
 fn_stoponerror $? $LINENO
 
-echo "Applying desktop integration..."
+echo "$LINENO: Applying desktop integration..."
 
 file_content="app_name=$app_name
 "
-file_content="$file_content""$(<./src/fix_desktop_file.sh)"
+file_content="$file_content""$(<./src/desktop_integration/fix_desktop_file.sh)"
 fn_stoponerror $? $LINENO
 echo "$file_content">"$dir_build_exe/fix_desktop_file.sh"
 fn_stoponerror $? $LINENO
 chmod +x "$dir_build_exe/fix_desktop_file.sh"
 fn_stoponerror $? $LINENO
-cp "./src/start-lited.desktop.template" "$dir_build_exe/start-lited.desktop"
+cp "./src/desktop_integration/lited.desktop.template" "$dir_build_exe/lited.desktop"
 fn_stoponerror $? $LINENO
-cp "./src/icon.ico" "$dir_build_exe"
+cp "./src/img/icon.ico" "$dir_build_exe"
 fn_stoponerror $? $LINENO
-
-
-printf "Your build is in $dir_build_exe directory\n"
 
 fn_clean_obj
 
-fn_exit
+printf "\nYour build located in $dir_build_exe directory\n"
+
+
+printf "\nDone.\n\n"
 
 

@@ -1,0 +1,12 @@
+#!/usr/bin/env
+
+[Desktop Entry]
+Type=Application
+Name=lited
+GenericName=lited
+Comment=lited text editor
+Categories=Development;
+StartupNotify=true
+Path=/media/data/dev/git/lited/Release/lited_0.8_linux64
+Exec=/media/data/dev/git/lited/Release/lited_0.8_linux64/lited
+Icon=/media/data/dev/git/lited/Release/lited_0.8_linux64/icon.ico
