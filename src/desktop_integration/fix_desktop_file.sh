@@ -18,7 +18,7 @@ sed -i -e "s,^Name=.*,Name=$app_name,g" $desktop_file
 fn_stoponerror $? $LINENO
 sed -i -e "s,^GenericName=.*,GenericName=$app_name,g" $desktop_file
 fn_stoponerror $? $LINENO
-sed -i -e "s,^Icon=.*,Icon=$dir0/icon.ico,g" $desktop_file
+sed -i -e "s,^Icon=.*,Icon=$dir0/icon.png,g" $desktop_file
 fn_stoponerror $? $LINENO
 sed -i -e "s,^Exec=.*,Exec=$dir0/$app_name,g" $desktop_file
 fn_stoponerror $? $LINENO

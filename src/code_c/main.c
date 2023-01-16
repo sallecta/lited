@@ -121,32 +121,38 @@ int main(int argc, char **argv)
 	lua_pushstring(L, exename);
 	lua_setglobal(L, "EXEFILE");
 	
+	if (luaL_dofile(L, "data/main.lua") != LUA_OK)
+	{
+		const char *error;
+		error = lua_tostring(L, -1);
+		puts(error);
+	}
 	
-	(void) luaL_dostring
-	(L,
-		"local core\n"
-		"xpcall("
-			"function()\n"
-			"	SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
-			"	PATHSEP = package.config:sub(1, 1)\n"
-			"	EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
-			"	package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
-			"	package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
-			"	package.path = EXEDIR .. '/data/?/?.lua;' .. package.path\n"
-			"	core = require('core')\n"
-			"	core.init()\n"
-			"	core.run()\n"
-			"end,"
-			"function(arg_err)\n"
-			"	print('Error: ' .. tostring(arg_err))\n"
-			"	print(debug.traceback(nil, 2))\n"
-			"	if core and core.on_error then\n"
-			"		pcall(core.on_error, arg_err)\n"
-			"	end\n"
-			"	os.exit(1)\n"
-			"end"
-		")"
-	);
+	//(void) luaL_dostring
+	//(L,
+		//"local core\n"
+		//"xpcall("
+			//"function()\n"
+			//"	SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
+			//"	PATHSEP = package.config:sub(1, 1)\n"
+			//"	EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
+			//"	package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
+			//"	package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
+			//"	package.path = EXEDIR .. '/data/?/?.lua;' .. package.path\n"
+			//"	core = require('core')\n"
+			//"	core.init()\n"
+			//"	core.run()\n"
+			//"end,"
+			//"function(arg_err)\n"
+			//"	print('Error: ' .. tostring(arg_err))\n"
+			//"	print(debug.traceback(nil, 2))\n"
+			//"	if core and core.on_error then\n"
+			//"		pcall(core.on_error, arg_err)\n"
+			//"	end\n"
+			//"	os.exit(1)\n"
+			//"end"
+		//")"
+	//);
 	
 	
 	lua_close(L);

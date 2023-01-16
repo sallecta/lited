@@ -118,7 +118,7 @@ chmod +x "$dir_build_exe/fix_desktop_file.sh"
 fn_stoponerror $? $LINENO
 cp "./src/desktop_integration/lited.desktop.template" "$dir_build_exe/lited.desktop"
 fn_stoponerror $? $LINENO
-cp "./src/img/icon.ico" "$dir_build_exe"
+cp "./src/img/icon.png" "$dir_build_exe"
 fn_stoponerror $? $LINENO
 
 fn_clean_obj
